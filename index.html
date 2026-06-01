@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meet with Team - TSD HR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero-banner">
+        <div class="hero-copy">
+          <p class="eyebrow">TSD HR Team Showcase</p>
+          <h1>Meet with Team- TSD HR</h1>
+          <div class="hero-intro" aria-label="team introduction">
+            <p class="hero-text">
+              Know who supports which business team — no more guessing who does what.
+            </p>
+            <p class="hero-text">
+              Learn more about each other — background, skills, and the random things that make us interesting.
+            </p>
+            <p class="hero-text">
+              Build a stronger connection — because a team that knows each other works better together.
+            </p>
+            <p class="hero-text hero-text-accent">
+              So take a look, say hi, and let's make our TSD global HR team even more awesome — one fun fact at a time! 🚀
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="intro-strip">
+          <p>
+            Shuffle Spotlight stays as the lead interaction so the page still feels dynamic while keeping every profile easy to browse.
+          </p>
+          <button id="shuffleButton" type="button">Shuffle Spotlight</button>
+        </section>
+
+        <section class="content-grid">
+          <article class="spotlight-panel" id="spotlightPanel" aria-live="polite"></article>
+          <section class="member-grid" id="memberGrid" aria-label="team members"></section>
+        </section>
+      </main>
+    </div>
+
+    <template id="memberCardTemplate">
+      <button class="member-card" type="button">
+        <div class="portrait-frame">
+          <img class="portrait-image" alt="" loading="lazy" />
+          <div class="portrait-fill">
+            <span class="portrait-initials"></span>
+          </div>
+        </div>
+        <div class="member-copy">
+          <p class="member-role"></p>
+          <h2 class="member-name"></h2>
+        </div>
+      </button>
+    </template>
+
+    <div class="member-modal" id="memberModal" hidden>
+      <div class="member-modal__backdrop" data-close-modal="true"></div>
+      <section
+        class="member-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="memberModalTitle"
+      >
+        <button class="member-modal__close" id="memberModalClose" type="button" aria-label="Close member detail">
+          Close
+        </button>
+        <div class="member-modal__body" id="memberModalBody"></div>
+      </section>
+    </div>
+
+    <script src="./member-data.js"></script>
+    <script src="./script.js"></script>
+  </body>
+  </html>

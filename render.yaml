@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: meet-team-tsd-hr
+    runtime: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /index.html
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: DATA_DIR
+        value: /var/data
+    disk:
+      name: engagement-data
+      mountPath: /var/data
+      sizeGB: 1

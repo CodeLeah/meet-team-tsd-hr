@@ -463,37 +463,36 @@
         "slide":  28,
         "paragraphs":  [
                            "Your Lifestyle Photo",
-                           "Name",
-                           "Your Role:",
-                           "Location:",
-                           "Lenovo Journey锛?/a:t\u003e\u003c/a:r\u003e\u003ca:r\u003e\u003ca:rPr lang=\"en-US\" altLang=\"zh-CN\" dirty=\"0\"\u003e\u003ca:latin typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003ca:ea typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003ca:cs typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003c/a:rPr\u003e\u003ca:t\u003eHow long you have been with Lenovo",
-                           "Your customer/biz team : Briefly introduce the function and focus of the team you support 鈥?so other HR members can quickly understand who you work with",
-                           "Previous Work Experience锛?If you have)",
-                           "Hobbies聽(What you do for fun / energy)",
-                           "Family / Life聽(Optional, share as you feel comfortable)",
-                           "I鈥榙 like to support if you need...聽(e.g. skills, expertise, or anything you鈥檙e happy to help others with)Other things you鈥檇 like to share?"
+                           "Akanksha Gupta",
+                           "Your Role: HR Partner",
+                           "Location: Bangalore India",
+                           "Lenovo Journey锛?0 Years overall,5 years in HRP (supporting ISG and ISS CEC), 2.5 years HR PMO, and 2.5 years HR Ops.",
+                           "Your customer/biz team : I support ISS AP China CEC Business group",
+                           "Previous Work Experience: Talent Acquisition , IT consulting.",
+                           "聽Hobbies: I love running and playing Tennis",
+                           "Family / Life聽(married, have 2 kids) one 7 years old girl and a 2 years old boy, who keep me on my toes all the time)",
+                           "I鈥榙 like to support if you need...聽Transforming HR processes聽through AI-driven efficiencies, partnering with a cross cultural team.Other things you鈥檇 like to share? Every conversation teaches something new about people, leadership and the power of connection."
                        ],
-        "images":  {
-
-                   }
+        "images":  "image30.jpeg"
     },
     {
         "slide":  29,
         "paragraphs":  [
-                           "Your Lifestyle Photo",
-                           "Name",
-                           "Your Role:",
-                           "Location:",
-                           "Lenovo Journey锛?/a:t\u003e\u003c/a:r\u003e\u003ca:r\u003e\u003ca:rPr lang=\"en-US\" altLang=\"zh-CN\" dirty=\"0\"\u003e\u003ca:latin typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003ca:ea typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003ca:cs typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003c/a:rPr\u003e\u003ca:t\u003eHow long you have been with Lenovo",
-                           "Your customer/biz team : Briefly introduce the function and focus of the team you support 鈥?so other HR members can quickly understand who you work with",
-                           "Previous Work Experience锛?If you have)",
-                           "Hobbies聽(What you do for fun / energy)",
-                           "Family / Life聽(Optional, share as you feel comfortable)",
-                           "I鈥榙 like to support if you need...聽(e.g. skills, expertise, or anything you鈥檙e happy to help others with)Other things you鈥檇 like to share?"
+                           "Sabyasachi Acharya",
+                           "Your Role: HR Partner",
+                           "Location: Bengaluru, India",
+                           "Lenovo Journey锛?/a:t\u003e\u003c/a:r\u003e\u003ca:r\u003e\u003ca:rPr lang=\"en-US\" altLang=\"zh-CN\" sz=\"1600\"\u003e\u003ca:latin typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003ca:cs typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003c/a:rPr\u003e\u003ca:t\u003e10 Months",
+                           "Your customer/biz team :",
+                           "ISS 鈥?CEC - Global Shared Service Centre",
+                           "ISS 鈥?CEC - Global Managed Services",
+                           "Currently Transitioning between ISS CEC to DWS Geo Delivery (TBD)",
+                           "Previous Work Experience锛?/a:t\u003e\u003c/a:r\u003e\u003ca:r\u003e\u003ca:rPr lang=\"en-US\" altLang=\"zh-CN\" sz=\"1600\"\u003e\u003ca:latin typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003ca:ea typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003ca:cs typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003c/a:rPr\u003e\u003ca:t\u003e10+ years of HRP experience across IT and Pharma industries",
+                           "Hobbies聽: Weekend cricket, Gym, PS Games",
+                           "Family / Life聽: Married; I have a 5 year old boy",
+                           "I鈥榙 like to support if you need...聽Data Analysis, using AI tools, India 鈥?Bangalore site level assistance",
+                           "Other things you鈥檇 like to share? I\u0027m a certified Hogan Assessment Practitioner."
                        ],
-        "images":  {
-
-                   }
+        "images":  "image31.jpeg"
     },
     {
         "slide":  30,
@@ -674,23 +673,6 @@
         "images":  {
 
                    }
-    },
-    {
-        "slide":  40,
-        "paragraphs":  [
-                           "Your Lifestyle Photo",
-                           "Name",
-                           "Your Role:",
-                           "Location:",
-                           "Lenovo Journey锛?/a:t\u003e\u003c/a:r\u003e\u003ca:r\u003e\u003ca:rPr lang=\"en-US\" altLang=\"zh-CN\" dirty=\"0\"\u003e\u003ca:latin typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003ca:ea typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003ca:cs typeface=\"Calibri\" panose=\"020F0502020204030204\" pitchFamily=\"34\" charset=\"0\"/\u003e\u003c/a:rPr\u003e\u003ca:t\u003eHow long you have been with Lenovo",
-                           "Your customer/biz team : Briefly introduce the function and focus of the team you support 鈥?so other HR members can quickly understand who you work with",
-                           "Previous Work Experience锛?If you have)",
-                           "Hobbies聽(What you do for fun / energy)",
-                           "Family / Life聽(Optional, share as you feel comfortable)",
-                           "I鈥榙 like to support if you need...聽(e.g. skills, expertise, or anything you鈥檙e happy to help others with)Other things you鈥檇 like to share?"
-                       ],
-        "images":  {
-
-                   }
     }
 ];
+

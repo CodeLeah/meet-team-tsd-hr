@@ -1,4 +1,8 @@
 const rawSlides = Array.isArray(window.pptSlides) ? window.pptSlides : [];
+const appConfig =
+  typeof window.teamAppConfig === "object" && window.teamAppConfig !== null
+    ? window.teamAppConfig
+    : {};
 
 const palettes = [
   "linear-gradient(160deg, #d96c5f 0%, #efb08a 55%, #f7dbc7 100%)",
@@ -43,8 +47,7 @@ const memberModal = document.querySelector("#memberModal");
 const memberModalBody = document.querySelector("#memberModalBody");
 const memberModalClose = document.querySelector("#memberModalClose");
 
-const STORAGE_KEY = "tsd-hr-team-engagement";
-const ENGAGEMENT_API_PATH = "./api/engagement";
+const configuredAssetBasePath = String(appConfig.assetBasePath ?? "").trim().replace(/\/+$/, "");
 const preferredOrder = [
   "Lilian Liao",
   "Xin Zhang",
@@ -128,8 +131,18 @@ function appendField(fields, key, value) {
   fields[key] = fields[key] ? `${fields[key]} ${value}` : value;
 }
 
+function buildAssetPath(path) {
+  const normalizedPath = String(path ?? "").replace(/^\.\//, "");
+
+  if (!configuredAssetBasePath) {
+    return `./${normalizedPath}`;
+  }
+
+  return `${configuredAssetBasePath}/${normalizedPath}`;
+}
+
 function toMediaPath(fileName) {
-  return fileName ? `./temp_pptx/ppt/media/${fileName}` : "";
+  return fileName ? buildAssetPath(`temp_pptx/ppt/media/${fileName}`) : "";
 }
 
 function toThumbnailPath(fileName) {
@@ -138,7 +151,7 @@ function toThumbnailPath(fileName) {
   }
 
   const baseName = String(fileName).replace(/\.[^.]+$/, "");
-  return `./thumbnails/${baseName}.jpg`;
+  return buildAssetPath(`thumbnails/${baseName}.jpg`);
 }
 
 function resolveMemberMedia(name, images) {
@@ -151,18 +164,44 @@ function resolveMemberMedia(name, images) {
   if (name === "Helen Gu") {
     return {
       primaryImage: toThumbnailPath("image11.png") || toMediaPath("image11.png"),
-      detailImage: toMediaPath("image10.jpeg"),
-      accentImage: toMediaPath("image11.png"),
-      detailImageClass: "detail-portrait__main--contain"
+      detailImage: toThumbnailPath("image10.jpeg") || toMediaPath("image10.jpeg"),
+      accentImage: toThumbnailPath("image11.png") || toMediaPath("image11.png"),
+      detailImageClass: "detail-portrait__main--contain",
+      fallbackImage: toMediaPath("image10.jpeg"),
+      cardFrameClass: "",
+      cardImageClass: "",
+      detailPortraitClass: ""
+    };
+  }
+
+  if (name === "Sabyasachi Acharya") {
+    const landscapeImage = buildAssetPath("thumbnails/image31-landscape.jpg");
+
+    return {
+      primaryImage: landscapeImage,
+      detailImage: landscapeImage,
+      accentImage: "",
+      detailImageClass: "detail-portrait__main--landscape",
+      fallbackImage: toMediaPath("image31.jpeg"),
+      cardFrameClass: "",
+      cardImageClass: "portrait-image--landscape-focus",
+      detailPortraitClass: "detail-portrait--landscape"
     };
   }
 
   const preferred = candidates.find((image) => /\.(png|jpe?g|webp|gif)$/i.test(image));
+  const thumbnailImage = toThumbnailPath(preferred);
+  const mediaImage = toMediaPath(preferred);
+
   return {
-    primaryImage: toThumbnailPath(preferred) || toMediaPath(preferred),
-    detailImage: toMediaPath(preferred),
+    primaryImage: thumbnailImage || mediaImage,
+    detailImage: thumbnailImage || mediaImage,
     accentImage: "",
-    detailImageClass: ""
+    detailImageClass: "",
+    fallbackImage: mediaImage,
+    cardFrameClass: "",
+    cardImageClass: "",
+    detailPortraitClass: ""
   };
 }
 
@@ -285,6 +324,10 @@ function parseSlide(slide, id) {
     detailImage: media.detailImage,
     accentImage: media.accentImage,
     detailImageClass: media.detailImageClass,
+    fallbackImage: media.fallbackImage,
+    cardFrameClass: media.cardFrameClass,
+    cardImageClass: media.cardImageClass,
+    detailPortraitClass: media.detailPortraitClass,
     palette: palettes[(id - 1) % palettes.length],
     initials: getInitials(name)
   };
@@ -307,7 +350,7 @@ function sortMembersByPreferredOrder(items) {
 
 const members = sortMembersByPreferredOrder(
   rawSlides
-  .filter((slide) => slide && slide.slide <= 27)
+  .filter((slide) => slide)
   .map((slide, index) => parseSlide(slide, index + 1))
   .filter(Boolean)
 ).map((member, index) => ({
@@ -318,10 +361,6 @@ const members = sortMembersByPreferredOrder(
 
 let activeMemberId = members[0]?.id ?? null;
 let openMemberId = null;
-let engagementState = {};
-let engagementLoadPromise = null;
-let engagementPollTimer = null;
-let engagementMode = window.location.protocol === "file:" ? "local" : "api";
 
 if (introText) {
   introText.textContent = "Click to shuffle and change the spotlight member.";
@@ -331,12 +370,32 @@ if (shuffleButton) {
   shuffleButton.disabled = members.length < 2;
 }
 
-function renderSpotlight(member) {
-  const visual = member.image
-    ? `<img class="spotlight-image" src="${member.image}" alt="${member.name}" />`
-    : `<div class="spotlight-portrait">${member.initials}</div>`;
+function attachImageFallback(image, fallbackImage) {
+  if (!(image instanceof HTMLImageElement)) {
+    return;
+  }
 
-  const photoStyle = member.image ? "" : `style="background: ${member.palette};"`;
+  image.addEventListener("error", () => {
+    if (fallbackImage && image.dataset.fallbackApplied !== "true" && image.src !== fallbackImage) {
+      image.dataset.fallbackApplied = "true";
+      image.src = fallbackImage;
+      return;
+    }
+
+    image.hidden = true;
+    const frame = image.closest(".portrait-frame, .spotlight-photo, .detail-portrait");
+    frame?.classList.remove("has-image");
+    frame?.querySelector(".portrait-fill, .image-fallback")?.removeAttribute("hidden");
+  });
+}
+
+function renderSpotlight(member) {
+  const visual = `
+    ${member.image ? `<img class="spotlight-image" src="${member.image}" alt="${member.name}" />` : ""}
+    <div class="spotlight-portrait image-fallback" ${member.image ? "hidden" : ""}>${member.initials}</div>
+  `;
+
+  const photoStyle = `style="background: ${member.palette};"`;
 
   spotlightPanel.innerHTML = `
     <div class="spotlight-photo" ${photoStyle}>
@@ -349,6 +408,8 @@ function renderSpotlight(member) {
       ${member.facts.map((fact) => `<li>${fact}</li>`).join("")}
     </ul>
   `;
+
+  attachImageFallback(spotlightPanel.querySelector(".spotlight-image"), member.fallbackImage);
 }
 
 function renderMembers() {
@@ -363,11 +424,15 @@ function renderMembers() {
     const portraitImage = card.querySelector(".portrait-image");
     const portraitFill = card.querySelector(".portrait-fill");
 
+    portraitFrame.className = `portrait-frame ${member.cardFrameClass || ""}`.trim();
+    portraitImage.className = `portrait-image ${member.cardImageClass || ""}`.trim();
     portraitFrame.classList.toggle("has-image", Boolean(member.image));
     portraitImage.hidden = !member.image;
     portraitImage.src = member.image || "";
     portraitImage.alt = member.name;
     portraitFill.style.background = member.palette;
+    portraitFill.hidden = Boolean(member.image);
+    attachImageFallback(portraitImage, member.fallbackImage);
 
     card.querySelector(".portrait-initials").textContent = member.initials;
     card.querySelector(".member-role").textContent = member.role;
@@ -384,169 +449,7 @@ function renderMembers() {
   });
 }
 
-function normalizeEngagementState(state) {
-  const nextState = {};
-
-  if (!state || typeof state !== "object") {
-    return nextState;
-  }
-
-  Object.entries(state).forEach(([memberId, entry]) => {
-    const likes = Number(entry?.likes ?? 0);
-    const comments = Array.isArray(entry?.comments)
-      ? entry.comments
-        .filter((comment) => comment && typeof comment.text === "string")
-        .map((comment) => ({
-          text: comment.text,
-          timestamp: comment.timestamp || new Date().toISOString()
-        }))
-      : [];
-
-    nextState[String(memberId)] = {
-      likes: Number.isFinite(likes) ? likes : 0,
-      comments
-    };
-  });
-
-  return nextState;
-}
-
-function readLocalEngagementState() {
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return normalizeEngagementState(stored ? JSON.parse(stored) : {});
-  } catch {
-    return {};
-  }
-}
-
-function writeLocalEngagementState(state) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeEngagementState(state)));
-}
-
-async function fetchSharedEngagementState() {
-  const response = await fetch(`${ENGAGEMENT_API_PATH}?t=${Date.now()}`, {
-    cache: "no-store"
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to load engagement state: ${response.status}`);
-  }
-
-  return normalizeEngagementState(await response.json());
-}
-
-async function persistSharedEngagementState(state) {
-  const response = await fetch(ENGAGEMENT_API_PATH, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(normalizeEngagementState(state))
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to save engagement state: ${response.status}`);
-  }
-
-  return normalizeEngagementState(await response.json());
-}
-
-async function ensureEngagementState(force = false) {
-  if (!force && engagementLoadPromise) {
-    return engagementLoadPromise;
-  }
-
-  if (!force && Object.keys(engagementState).length > 0) {
-    return engagementState;
-  }
-
-  engagementLoadPromise = (async () => {
-    if (engagementMode === "api") {
-      try {
-        engagementState = await fetchSharedEngagementState();
-        return engagementState;
-      } catch {
-        engagementMode = "local";
-      }
-    }
-
-    engagementState = readLocalEngagementState();
-    return engagementState;
-  })();
-
-  try {
-    return await engagementLoadPromise;
-  } finally {
-    engagementLoadPromise = null;
-  }
-}
-
-async function saveEngagementState(state) {
-  const normalized = normalizeEngagementState(state);
-
-  if (engagementMode === "api") {
-    try {
-      engagementState = await persistSharedEngagementState(normalized);
-      return engagementState;
-    } catch {
-      engagementMode = "local";
-    }
-  }
-
-  writeLocalEngagementState(normalized);
-  engagementState = normalized;
-  return engagementState;
-}
-
-function getMemberEngagement(memberId) {
-  const entry = engagementState[String(memberId)] ?? {};
-  return {
-    likes: Number(entry.likes ?? 0),
-    comments: Array.isArray(entry.comments) ? entry.comments : []
-  };
-}
-
-async function updateMemberEngagement(memberId, updater) {
-  await ensureEngagementState();
-  const current = getMemberEngagement(memberId);
-  const nextState = {
-    ...engagementState,
-    [String(memberId)]: updater(current)
-  };
-
-  await saveEngagementState(nextState);
-  return getMemberEngagement(memberId);
-}
-
-function formatCommentTime(timestamp) {
-  const date = new Date(timestamp);
-  return Number.isNaN(date.getTime()) ? "Just now" : date.toLocaleString();
-}
-
-function renderComments(comments) {
-  if (comments.length === 0) {
-    return '<p class="comment-empty">No comments yet. Be the first anonymous note for this member.</p>';
-  }
-
-  return `
-    <ul class="comment-list">
-      ${comments
-        .map(
-          (comment) => `
-            <li>
-              <span class="comment-meta">Anonymous • ${formatCommentTime(comment.timestamp)}</span>
-              <p>${escapeHtml(comment.text)}</p>
-            </li>
-          `
-        )
-        .join("")}
-    </ul>
-  `;
-}
-
 function renderMemberModal(member) {
-  const engagement = getMemberEngagement(member.id);
   const detailSections = member.details
     .filter((section) => section.content)
     .map(
@@ -561,8 +464,9 @@ function renderMemberModal(member) {
 
   memberModalBody.innerHTML = `
     <div class="detail-hero">
-      <div class="detail-portrait ${member.accentImage ? "detail-portrait--stacked" : ""}" style="background: ${member.image ? "transparent" : member.palette};">
-        ${member.detailImage ? `<img class="${member.detailImageClass || ""}" src="${member.detailImage}" alt="${escapeHtml(member.name)}" />` : `<div class="spotlight-portrait">${escapeHtml(member.initials)}</div>`}
+      <div class="detail-portrait ${member.accentImage ? "detail-portrait--stacked" : ""} ${member.detailPortraitClass || ""}" style="background: ${member.palette};">
+        ${member.detailImage ? `<img class="${member.detailImageClass || ""}" src="${member.detailImage}" alt="${escapeHtml(member.name)}" />` : ""}
+        <div class="spotlight-portrait image-fallback" ${member.detailImage ? "hidden" : ""}>${escapeHtml(member.initials)}</div>
         ${member.accentImage ? `<img class="detail-portrait__accent" src="${member.accentImage}" alt="" />` : ""}
       </div>
       <div class="detail-summary">
@@ -574,88 +478,12 @@ function renderMemberModal(member) {
     <div class="detail-sections">
       ${detailSections}
     </div>
-    <section class="engagement-panel">
-      <div class="engagement-header">
-        <h3>Team Reactions</h3>
-        <button class="like-button" id="likeButton" type="button">Like • ${engagement.likes}</button>
-      </div>
-      <form class="comment-form" id="commentForm">
-        <label for="commentText">Leave an anonymous comment</label>
-        <textarea id="commentText" name="commentText" maxlength="500" placeholder="Write something kind, useful, or fun."></textarea>
-        <p class="comment-helper">Comments are shown as Anonymous to everyone viewing this member page.</p>
-        <button type="submit">Post Comment</button>
-      </form>
-      <div class="comment-list-title">Comments (${engagement.comments.length})</div>
-      <div id="commentListWrap">
-        ${renderComments(engagement.comments)}
-      </div>
-    </section>
   `;
 
-  memberModalBody.querySelector("#likeButton")?.addEventListener("click", async (event) => {
-    const button = event.currentTarget;
-    button.disabled = true;
-
-    await updateMemberEngagement(member.id, (current) => ({
-      likes: current.likes + 1,
-      comments: current.comments
-    }));
-
-    renderMemberModal(member);
-  });
-
-  memberModalBody.querySelector("#commentForm")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const commentField = form.querySelector("#commentText");
-    const submitButton = form.querySelector('button[type="submit"]');
-    const text = commentField.value.trim();
-
-    if (!text) {
-      return;
-    }
-
-    submitButton.disabled = true;
-
-    await updateMemberEngagement(member.id, (current) => ({
-      likes: current.likes,
-      comments: [...current.comments, { text, timestamp: new Date().toISOString() }]
-    }));
-
-    renderMemberModal(member);
-  });
+  attachImageFallback(memberModalBody.querySelector(".detail-portrait img:not(.detail-portrait__accent)"), member.fallbackImage);
 }
 
-async function refreshOpenMemberDetail(force = false) {
-  if (openMemberId === null) {
-    return;
-  }
-
-  await ensureEngagementState(force);
-  const member = members.find((entry) => entry.id === openMemberId);
-
-  if (member) {
-    renderMemberModal(member);
-  }
-}
-
-function startEngagementPolling() {
-  if (engagementMode !== "api") {
-    return;
-  }
-
-  window.clearInterval(engagementPollTimer);
-  engagementPollTimer = window.setInterval(() => {
-    refreshOpenMemberDetail(true).catch(() => {});
-  }, 10000);
-}
-
-function stopEngagementPolling() {
-  window.clearInterval(engagementPollTimer);
-  engagementPollTimer = null;
-}
-
-async function openMemberDetail(memberId) {
+function openMemberDetail(memberId) {
   const member = members.find((entry) => entry.id === memberId);
 
   if (!member) {
@@ -666,14 +494,10 @@ async function openMemberDetail(memberId) {
   renderMemberModal(member);
   memberModal.hidden = false;
   document.body.style.overflow = "hidden";
-  startEngagementPolling();
-
-  await refreshOpenMemberDetail(true);
 }
 
 function closeMemberDetail() {
   openMemberId = null;
-  stopEngagementPolling();
   memberModal.hidden = true;
   document.body.style.overflow = "";
 }
@@ -712,7 +536,6 @@ document.addEventListener("keydown", (event) => {
 if (members.length > 0) {
   renderSpotlight(members[0]);
   renderMembers();
-  ensureEngagementState().catch(() => {});
 } else {
   spotlightPanel.innerHTML = "<p class=\"spotlight-bio\">No team member data was imported from the presentation.</p>";
 }

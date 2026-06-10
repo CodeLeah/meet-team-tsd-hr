@@ -46,6 +46,7 @@ const introText = document.querySelector(".intro-strip p");
 const memberModal = document.querySelector("#memberModal");
 const memberModalBody = document.querySelector("#memberModalBody");
 const memberModalClose = document.querySelector("#memberModalClose");
+const memberCardMap = new Map();
 
 const configuredAssetBasePath = String(appConfig.assetBasePath ?? "").trim().replace(/\/+$/, "");
 const preferredOrder = [
@@ -205,15 +206,6 @@ function resolveMemberMedia(name, images) {
   };
 }
 
-function getInitials(name) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
 function shorten(value, maxLength = 180) {
   if (!value || value.length <= maxLength) {
     return value;
@@ -328,8 +320,7 @@ function parseSlide(slide, id) {
     cardFrameClass: media.cardFrameClass,
     cardImageClass: media.cardImageClass,
     detailPortraitClass: media.detailPortraitClass,
-    palette: palettes[(id - 1) % palettes.length],
-    initials: getInitials(name)
+    palette: palettes[(id - 1) % palettes.length]
   };
 }
 
@@ -385,14 +376,22 @@ function attachImageFallback(image, fallbackImage) {
     image.hidden = true;
     const frame = image.closest(".portrait-frame, .spotlight-photo, .detail-portrait");
     frame?.classList.remove("has-image");
-    frame?.querySelector(".portrait-fill, .image-fallback")?.removeAttribute("hidden");
   });
+}
+
+function updateActiveMemberCard(previousMemberId, nextMemberId) {
+  if (previousMemberId !== null) {
+    memberCardMap.get(previousMemberId)?.classList.remove("is-active");
+  }
+
+  if (nextMemberId !== null) {
+    memberCardMap.get(nextMemberId)?.classList.add("is-active");
+  }
 }
 
 function renderSpotlight(member) {
   const visual = `
-    ${member.image ? `<img class="spotlight-image" src="${member.image}" alt="${member.name}" />` : ""}
-    <div class="spotlight-portrait image-fallback" ${member.image ? "hidden" : ""}>${member.initials}</div>
+    ${member.image ? `<img class="spotlight-image" src="${member.image}" alt="${member.name}" decoding="async" fetchpriority="high" />` : ""}
   `;
 
   const photoStyle = `style="background: ${member.palette};"`;
@@ -414,6 +413,7 @@ function renderSpotlight(member) {
 
 function renderMembers() {
   memberGrid.innerHTML = "";
+  memberCardMap.clear();
 
   members.forEach((member) => {
     const card = memberCardTemplate.content.firstElementChild.cloneNode(true);
@@ -422,7 +422,6 @@ function renderMembers() {
 
     const portraitFrame = card.querySelector(".portrait-frame");
     const portraitImage = card.querySelector(".portrait-image");
-    const portraitFill = card.querySelector(".portrait-fill");
 
     portraitFrame.className = `portrait-frame ${member.cardFrameClass || ""}`.trim();
     portraitImage.className = `portrait-image ${member.cardImageClass || ""}`.trim();
@@ -430,21 +429,21 @@ function renderMembers() {
     portraitImage.hidden = !member.image;
     portraitImage.src = member.image || "";
     portraitImage.alt = member.name;
-    portraitFill.style.background = member.palette;
-    portraitFill.hidden = Boolean(member.image);
+    portraitImage.decoding = "async";
     attachImageFallback(portraitImage, member.fallbackImage);
 
-    card.querySelector(".portrait-initials").textContent = member.initials;
     card.querySelector(".member-role").textContent = member.role;
     card.querySelector(".member-name").textContent = member.name;
 
     card.addEventListener("click", () => {
+      const previousMemberId = activeMemberId;
       activeMemberId = member.id;
+      updateActiveMemberCard(previousMemberId, activeMemberId);
       renderSpotlight(member);
-      renderMembers();
       openMemberDetail(member.id);
     });
 
+    memberCardMap.set(member.id, card);
     memberGrid.appendChild(card);
   });
 }
@@ -465,8 +464,7 @@ function renderMemberModal(member) {
   memberModalBody.innerHTML = `
     <div class="detail-hero">
       <div class="detail-portrait ${member.accentImage ? "detail-portrait--stacked" : ""} ${member.detailPortraitClass || ""}" style="background: ${member.palette};">
-        ${member.detailImage ? `<img class="${member.detailImageClass || ""}" src="${member.detailImage}" alt="${escapeHtml(member.name)}" />` : ""}
-        <div class="spotlight-portrait image-fallback" ${member.detailImage ? "hidden" : ""}>${escapeHtml(member.initials)}</div>
+        ${member.detailImage ? `<img class="${member.detailImageClass || ""}" src="${member.detailImage}" alt="${escapeHtml(member.name)}" decoding="async" />` : ""}
         ${member.accentImage ? `<img class="detail-portrait__accent" src="${member.accentImage}" alt="" />` : ""}
       </div>
       <div class="detail-summary">
@@ -511,9 +509,10 @@ function shuffleSpotlight() {
   const randomIndex = Math.floor(Math.random() * otherMembers.length);
   const nextMember = otherMembers[randomIndex];
 
+  const previousMemberId = activeMemberId;
   activeMemberId = nextMember.id;
+  updateActiveMemberCard(previousMemberId, activeMemberId);
   renderSpotlight(nextMember);
-  renderMembers();
 }
 
 shuffleButton?.addEventListener("click", shuffleSpotlight);
